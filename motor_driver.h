@@ -11,6 +11,7 @@ class MotorDriver {
   void setPortNum(const int port_a, const int port_b, const int port_en);
   void compute();
   void setDriveMode(const MotorDriveMode drive_mode);
+  int getVoltage() {return voltage_;}
 
  private:
   void driveMotor(const int volt);

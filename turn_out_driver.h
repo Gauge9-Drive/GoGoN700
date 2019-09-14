@@ -11,6 +11,7 @@ class TurnOutDriver {
   void compute();
   void setStatus(const TurnOutStatus turn_out_status);
   void requestForceDrive();
+  TurnOutStatus getStatus() {return turn_out_status_;}
 
  private:
   void drive();

@@ -45,6 +45,8 @@ StateBase* StateHalt1::transit(const InputDevices& input) {
 }
 
 void StateHalt1::execute(OutputDevices& output) {
+  output.turn_out_driver_1.setStatus(kTurnOutStraight);
+  output.motor_driver_1.setDriveMode(kMtDrvModeHalt);
   output.val = 0;
 }
 
@@ -68,6 +70,8 @@ StateBase* StateFwdSlow::transit(const InputDevices& input) {
 }
 
 void StateFwdSlow::execute(OutputDevices& output) {
+  output.turn_out_driver_1.setStatus(kTurnOutStraight);
+  output.motor_driver_1.setDriveMode(kMtDrvModeFwdSlow);
   output.val = 1;
 }
 
@@ -104,6 +108,8 @@ StateBase* StateFwdFast::transit(const InputDevices& input) {
 }
 
 void StateFwdFast::execute(OutputDevices& output) {
+  output.turn_out_driver_1.setStatus(kTurnOutStraight);
+  output.motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
   output.val = 1;
 }
 
@@ -127,6 +133,8 @@ StateBase* StateHalt2::transit(const InputDevices& input) {
 }
 
 void StateHalt2::execute(OutputDevices& output) {
+  output.turn_out_driver_1.setStatus(kTurnOutCurve);
+  output.motor_driver_1.setDriveMode(kMtDrvModeHalt);
   output.val = 0;
 }
 
@@ -150,6 +158,8 @@ StateBase* StateBwdSlow::transit(const InputDevices& input) {
 }
 
 void StateBwdSlow::execute(OutputDevices& output) {
+  output.turn_out_driver_1.setStatus(kTurnOutCurve);
+  output.motor_driver_1.setDriveMode(kMtDrvModeBwdSlow);
   output.val = 1;
 }
 
@@ -186,5 +196,7 @@ StateBase* StateBwdFast::transit(const InputDevices& input) {
 }
 
 void StateBwdFast::execute(OutputDevices& output) {
+  output.turn_out_driver_1.setStatus(kTurnOutCurve);
+  output.motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
   output.val = 1;
 }

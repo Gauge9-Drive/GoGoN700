@@ -2,6 +2,10 @@
  * Schematics
  * 09 --MotorA(1A)--M--(2A)MotorB-- 10
  * Gauge9-Drive / 時致
+ * TODO スイッチをクラスにする
+ * TODO 入出力デバイスをクラスにする
+ * TODO センサのLED駆動をシングルトンにする
+ * TODO 入力・出力クラスでそれぞれインターフェースを統一できないか
  */
 
 #include "constant_value.h"
@@ -33,8 +37,8 @@ InputDevices input_devices;
 OutputDevices output_devices;
 StateManager state_manager;
 
-TurnOutDriver turn_out_driver_1;
-MotorDriver motor_driver_1;
+//TurnOutDriver turn_out_driver_1;
+//MotorDriver motor_driver_1;
 CountDownTimer timer_1;
 //PhotoInterrupterLedDriver photo_int_led;
 //PhotoInterrupter photo_int_1;
@@ -46,14 +50,12 @@ struct InputStatus {
   bool sensor_status_2;
 } input_status;
 
-
-
 void controlMotor() {
-  motor_driver_1.compute();
+  output_devices.motor_driver_1.compute();
 }
 
 void controlTurnOut() {
-  turn_out_driver_1.compute();
+  output_devices.turn_out_driver_1.compute();
 }
 
 void drivePhotoInterrupter() {
@@ -183,8 +185,8 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(kPortGreenLed, HIGH);
   digitalWrite(kPortRedLed, LOW);
-  turn_out_driver_1.setPortNum(kPortTurnOut1P, kPortTurnOut1N);
-  motor_driver_1.setPortNum(kPortMotorA, kPortMotorB, kPortEnableDriver);
+  output_devices.turn_out_driver_1.setPortNum(kPortTurnOut1P, kPortTurnOut1N);
+  output_devices.motor_driver_1.setPortNum(kPortMotorA, kPortMotorB, kPortEnableDriver);
   input_devices.photo_int_led.setPortNum(kPortPhotoIntLed);
   input_devices.photo_int_1.setPortNum(kPortPhotoInt01);
   input_devices.photo_int_1.setThresholdHigh(kThreasholdOfPhotoInt);
@@ -231,31 +233,32 @@ void loop() {
   input_devices.sw_edge = (input_devices.sw_status == true && pre_sw_status == false);
   pre_sw_status = input_devices.sw_status;
   state_manager.transit(input_devices);
-  state_manager.execute(output_devices);
 
   if(start100msTasks(millis())) { // run the control sequence every 100ms
+    state_manager.execute(output_devices);
+    /*
     if(control_state == kCtrlStHalt1) {
-      turn_out_driver_1.setStatus(kTurnOutStraight);
-      motor_driver_1.setDriveMode(kMtDrvModeHalt);
+      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
+      output_devices.motor_driver_1.setDriveMode(kMtDrvModeHalt);
     } else if(control_state == kCtrlStFwdSlow) {
-      turn_out_driver_1.setStatus(kTurnOutStraight);
-      motor_driver_1.setDriveMode(kMtDrvModeFwdSlow);
+      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
+      output_devices.motor_driver_1.setDriveMode(kMtDrvModeFwdSlow);
     } else if(control_state == kCtrlStFwdFast) {
-      turn_out_driver_1.setStatus(kTurnOutStraight);
-      motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
+      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
+      output_devices.motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
     } else if(control_state == kCtrlStHalt2) {
-      turn_out_driver_1.setStatus(kTurnOutCurve);
-      motor_driver_1.setDriveMode(kMtDrvModeHalt);
+      output_devices.turn_out_driver_1.setStatus(kTurnOutCurve);
+      output_devices.motor_driver_1.setDriveMode(kMtDrvModeHalt);
     } else if(control_state ==kCtrlStBwdSlow) {
-      turn_out_driver_1.setStatus(kTurnOutCurve);
-      motor_driver_1.setDriveMode(kMtDrvModeBwdSlow);
+      output_devices.turn_out_driver_1.setStatus(kTurnOutCurve);
+      output_devices.motor_driver_1.setDriveMode(kMtDrvModeBwdSlow);
     } else if(control_state == kCtrlStBwdFast) {
-      turn_out_driver_1.setStatus(kTurnOutCurve);
-      motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
+      output_devices.turn_out_driver_1.setStatus(kTurnOutCurve);
+      output_devices.motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
     } else {
-      turn_out_driver_1.setStatus(kTurnOutStraight);
-      motor_driver_1.setDriveMode(kMtDrvModeHalt);
-    }
+      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
+      output_devices.motor_driver_1.setDriveMode(kMtDrvModeHalt);
+    }*/
 
     controlTurnOut();
     controlMotor();
@@ -271,8 +274,8 @@ void loop() {
     Serial.print(", sensor 2 = ");
     Serial.print(input_devices.photo_int_2.getSensorRaw());
     Serial.print(", volt = ");
-    Serial.print(input_devices.photo_int_1.getSensorOnHold());
+    Serial.print(output_devices.motor_driver_1.getVoltage());
     Serial.print(", turn out = ");
-    Serial.println(input_devices.photo_int_1.getSensorOffHold());
+    Serial.println(output_devices.turn_out_driver_1.getStatus());
   }
 }

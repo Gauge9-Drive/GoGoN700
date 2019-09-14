@@ -1,7 +1,7 @@
 #ifndef IO_DEVICE_DEF_H
 #define IO_DEVICE_DEF_H
 
-struct InputDevices {
+struct InputDevices {  // TODO クラスにして、駆動処理をメソッドにする
   PhotoInterrupterLedDriver photo_int_led;
   PhotoInterrupter photo_int_1;
   PhotoInterrupter photo_int_2;
@@ -10,8 +10,8 @@ struct InputDevices {
 };
 
 struct OutputDevices {
-//  TurnOutDriver turn_out_driver_1;
-//  MotorDriver motor_driver_1;
+  TurnOutDriver turn_out_driver_1;
+  MotorDriver motor_driver_1;
   int val;
 };
 
