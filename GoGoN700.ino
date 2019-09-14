@@ -4,6 +4,7 @@
  * Gauge9-Drive / 時致
  * TODO スイッチをクラスにする
  * TODO 入出力デバイスをクラスにする
+ * TODO タイマの復活
  * TODO センサのLED駆動をシングルトンにする
  * TODO センサの判定条件をロバストにする
  * TODO ステート遷移条件の共通化
@@ -34,24 +35,12 @@ const int kPortPhotoInt02 = 1; // analog
 
 bool builtin_led_status;
 
-// for new algo
 InputDevices input_devices;
 OutputDevices output_devices;
 StateManager state_manager;
 
-//TurnOutDriver turn_out_driver_1;
-//MotorDriver motor_driver_1;
 CountDownTimer timer_1;
-//PhotoInterrupterLedDriver photo_int_led;
-//PhotoInterrupter photo_int_1;
-//PhotoInterrupter photo_int_2;
-/*
-struct InputStatus {
-  bool switch_status;
-  bool sensor_status_1;
-  bool sensor_status_2;
-} input_status;
-*/
+
 void controlMotor() {
   output_devices.motor_driver_1.compute();
 }
@@ -90,56 +79,7 @@ bool detectSwitchEdge(const bool sw_input) {
   pre_sw_input = sw_input;
   return output;
 }
-/*
-void transitState(ControlStatus* control_state, const InputStatus input_status, int* vehicle_loop_count) {
-  const bool detect_switch_edge = detectSwitchEdge(input_status.switch_status); // note : detectSwitch must be called at every cycle
 
-  switch(*control_state) {
-    case kCtrlStFwdSlow:
-      if(input_status.sensor_status_1) {
-        *control_state = kCtrlStFwdFast;
-      }
-      break;
-    case kCtrlStFwdFast:
-      if(*vehicle_loop_count >= 3) {
-        *control_state = kCtrlStHalt2;
-        *vehicle_loop_count = 0;
-      }
-      break;
-    case kCtrlStHalt2:
-      if(!timer_1.isActive()) {
-        timer_1.startTimer(10000UL);
-      } else {
-        if(timer_1.isTimerEnd()) {
-          *control_state = kCtrlStBwdSlow;
-        }
-      }
-    case kCtrlStBwdSlow:
-      if(input_status.sensor_status_1) {
-        *control_state = kCtrlStBwdFast;
-      }
-      break;
-    case kCtrlStBwdFast:
-      if(*vehicle_loop_count >= 3) {
-        *control_state = kCtrlStFwdSlow;
-        *vehicle_loop_count = 0;
-      }
-      break;
-    default:
-      break;
-  }
-  
-  if(detect_switch_edge && input_status.switch_status) { // detect rising edge only
-    int tmp = (int)(*control_state);
-    tmp++;
-    *control_state = (ControlStatus)tmp;
-    if(*control_state >= kCtrlStMaxNum) {
-      *control_state = kCtrlStHalt1;
-    }
-    timer_1.resetTimer();
-  }
-}
-*/
 void controlLed() {
   if(input_devices.photo_int_1.getSensorState()) {
     digitalWrite(kPortGreenLed, HIGH);
@@ -165,17 +105,7 @@ bool start100msTasks(const unsigned long time_msec) { // check if 100ms elapsed 
   }
   return ret;
 }
-/*
-void conutLoop(int* vehicle_loop_count, const InputStatus input_status) {
-  static int vehicle_section = 0;
-  if(vehicle_section == 0 && input_status.sensor_status_1) {
-    vehicle_section = 1;
-  } else if(vehicle_section == 1 && input_status.sensor_status_2) {
-    vehicle_section = 0;
-    (*vehicle_loop_count)++;
-  }
-}
-*/
+
 // =============Setup=============
 
 void setup() {
@@ -187,8 +117,8 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(kPortGreenLed, HIGH);
   digitalWrite(kPortRedLed, LOW);
-  output_devices.turn_out_driver_1.setPortNum(kPortTurnOut1P, kPortTurnOut1N);
-  output_devices.motor_driver_1.setPortNum(kPortMotorA, kPortMotorB, kPortEnableDriver);
+  input_devices.sw_status = false;
+  input_devices.sw_edge = false;
   input_devices.photo_int_led.setPortNum(kPortPhotoIntLed);
   input_devices.photo_int_1.setPortNum(kPortPhotoInt01);
   input_devices.photo_int_1.setThresholdHigh(kThreasholdOfPhotoInt);
@@ -199,16 +129,14 @@ void setup() {
   input_devices.photo_int_2.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
   input_devices.photo_int_2.setHoldTime(1000UL);
   
-  builtin_led_status = true;
-//  input_status.sensor_status_1 = false;
-//  input_status.sensor_status_2 = false;
-
-  input_devices.sw_status = false;
-  input_devices.sw_edge = false;
+  output_devices.turn_out_driver_1.setPortNum(kPortTurnOut1P, kPortTurnOut1N);
+  output_devices.motor_driver_1.setPortNum(kPortMotorA, kPortMotorB, kPortEnableDriver);
   output_devices.val = 0;
-  Serial.println("start");
-  state_manager.initialize();
 
+  state_manager.initialize();
+  builtin_led_status = true;
+
+  Serial.println("start");
 }
 
 // =============Loop=============
@@ -221,14 +149,7 @@ void loop() {
   // read push switch
   input_devices.sw_status = filterSwitchInput(digitalRead(kPortPushSwitch), millis());
   drivePhotoInterrupter();
-  // to be deleted
-//  input_status.sensor_status_1 = input_devices.photo_int_1.getSensorState();
-//  input_status.sensor_status_2 = input_devices.photo_int_2.getSensorState();
-  // to be deleted
-//  conutLoop(&vehicle_loop_count, input_status);
-//  transitState(&control_state, input_status, &vehicle_loop_count);
 
-// for new algo
   static bool pre_sw_status = false;
   input_devices.sw_edge = (input_devices.sw_status == true && pre_sw_status == false);
   pre_sw_status = input_devices.sw_status;
@@ -236,29 +157,6 @@ void loop() {
 
   if(start100msTasks(millis())) { // run the control sequence every 100ms
     state_manager.execute(output_devices);
-    /*
-    if(control_state == kCtrlStHalt1) {
-      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
-      output_devices.motor_driver_1.setDriveMode(kMtDrvModeHalt);
-    } else if(control_state == kCtrlStFwdSlow) {
-      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
-      output_devices.motor_driver_1.setDriveMode(kMtDrvModeFwdSlow);
-    } else if(control_state == kCtrlStFwdFast) {
-      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
-      output_devices.motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
-    } else if(control_state == kCtrlStHalt2) {
-      output_devices.turn_out_driver_1.setStatus(kTurnOutCurve);
-      output_devices.motor_driver_1.setDriveMode(kMtDrvModeHalt);
-    } else if(control_state ==kCtrlStBwdSlow) {
-      output_devices.turn_out_driver_1.setStatus(kTurnOutCurve);
-      output_devices.motor_driver_1.setDriveMode(kMtDrvModeBwdSlow);
-    } else if(control_state == kCtrlStBwdFast) {
-      output_devices.turn_out_driver_1.setStatus(kTurnOutCurve);
-      output_devices.motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
-    } else {
-      output_devices.turn_out_driver_1.setStatus(kTurnOutStraight);
-      output_devices.motor_driver_1.setDriveMode(kMtDrvModeHalt);
-    }*/
 
     controlTurnOut();
     controlMotor();
