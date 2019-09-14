@@ -89,9 +89,9 @@ StateFwdFast* StateFwdFast::getInstance() {
 }
 
 StateBase* StateFwdFast::transit(const InputDevices& input) {
-  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState()) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState() && !input.photo_int_1.getSensorState()) {
     (*loop_count_)++;
-  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState()) {
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState() && !input.photo_int_2.getSensorState()) {
     (*loop_count_)++;
   } else {
     // NOP
@@ -110,7 +110,7 @@ StateBase* StateFwdFast::transit(const InputDevices& input) {
 void StateFwdFast::execute(OutputDevices& output) {
   output.turn_out_driver_1.setStatus(kTurnOutStraight);
   output.motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
-  output.val = 1;
+  output.val = *loop_count_;
 }
 
 //===========================================================
@@ -177,9 +177,9 @@ StateBwdFast* StateBwdFast::getInstance() {
 }
 
 StateBase* StateBwdFast::transit(const InputDevices& input) {
-  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState()) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState() && !input.photo_int_1.getSensorState()) {
     (*loop_count_)++;
-  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState()) {
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState() && !input.photo_int_2.getSensorState()) {
     (*loop_count_)++;
   } else {
     // NOP
@@ -198,5 +198,5 @@ StateBase* StateBwdFast::transit(const InputDevices& input) {
 void StateBwdFast::execute(OutputDevices& output) {
   output.turn_out_driver_1.setStatus(kTurnOutCurve);
   output.motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
-  output.val = 1;
+  output.val = *loop_count_;
 }

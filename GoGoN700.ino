@@ -5,6 +5,8 @@
  * TODO スイッチをクラスにする
  * TODO 入出力デバイスをクラスにする
  * TODO センサのLED駆動をシングルトンにする
+ * TODO センサの判定条件をロバストにする
+ * TODO ステート遷移条件の共通化
  * TODO 入力・出力クラスでそれぞれインターフェースを統一できないか
  */
 
@@ -43,13 +45,13 @@ CountDownTimer timer_1;
 //PhotoInterrupterLedDriver photo_int_led;
 //PhotoInterrupter photo_int_1;
 //PhotoInterrupter photo_int_2;
-
+/*
 struct InputStatus {
   bool switch_status;
   bool sensor_status_1;
   bool sensor_status_2;
 } input_status;
-
+*/
 void controlMotor() {
   output_devices.motor_driver_1.compute();
 }
@@ -88,7 +90,7 @@ bool detectSwitchEdge(const bool sw_input) {
   pre_sw_input = sw_input;
   return output;
 }
-
+/*
 void transitState(ControlStatus* control_state, const InputStatus input_status, int* vehicle_loop_count) {
   const bool detect_switch_edge = detectSwitchEdge(input_status.switch_status); // note : detectSwitch must be called at every cycle
 
@@ -137,14 +139,14 @@ void transitState(ControlStatus* control_state, const InputStatus input_status, 
     timer_1.resetTimer();
   }
 }
-
-void controlLed(const InputStatus input_status) {
-  if(input_status.sensor_status_1) {
+*/
+void controlLed() {
+  if(input_devices.photo_int_1.getSensorState()) {
     digitalWrite(kPortGreenLed, HIGH);
   } else {
     digitalWrite(kPortGreenLed, LOW);
   }
-  if(input_status.sensor_status_2) {
+  if(input_devices.photo_int_2.getSensorState()) {
     digitalWrite(kPortRedLed, HIGH);
   } else {
     digitalWrite(kPortRedLed, LOW);
@@ -163,7 +165,7 @@ bool start100msTasks(const unsigned long time_msec) { // check if 100ms elapsed 
   }
   return ret;
 }
-
+/*
 void conutLoop(int* vehicle_loop_count, const InputStatus input_status) {
   static int vehicle_section = 0;
   if(vehicle_section == 0 && input_status.sensor_status_1) {
@@ -173,7 +175,7 @@ void conutLoop(int* vehicle_loop_count, const InputStatus input_status) {
     (*vehicle_loop_count)++;
   }
 }
-
+*/
 // =============Setup=============
 
 void setup() {
@@ -198,9 +200,8 @@ void setup() {
   input_devices.photo_int_2.setHoldTime(1000UL);
   
   builtin_led_status = true;
-  input_status.switch_status = false;
-  input_status.sensor_status_1 = false;
-  input_status.sensor_status_2 = false;
+//  input_status.sensor_status_1 = false;
+//  input_status.sensor_status_2 = false;
 
   input_devices.sw_status = false;
   input_devices.sw_edge = false;
@@ -218,18 +219,17 @@ void loop() {
   static int vehicle_loop_count = 0;
 
   // read push switch
-  input_status.switch_status = filterSwitchInput(digitalRead(kPortPushSwitch), millis());
+  input_devices.sw_status = filterSwitchInput(digitalRead(kPortPushSwitch), millis());
   drivePhotoInterrupter();
   // to be deleted
-  input_status.sensor_status_1 = input_devices.photo_int_1.getSensorState();
-  input_status.sensor_status_2 = input_devices.photo_int_2.getSensorState();
+//  input_status.sensor_status_1 = input_devices.photo_int_1.getSensorState();
+//  input_status.sensor_status_2 = input_devices.photo_int_2.getSensorState();
   // to be deleted
-  conutLoop(&vehicle_loop_count, input_status);
-  transitState(&control_state, input_status, &vehicle_loop_count);
+//  conutLoop(&vehicle_loop_count, input_status);
+//  transitState(&control_state, input_status, &vehicle_loop_count);
 
 // for new algo
   static bool pre_sw_status = false;
-  input_devices.sw_status = input_status.switch_status;
   input_devices.sw_edge = (input_devices.sw_status == true && pre_sw_status == false);
   pre_sw_status = input_devices.sw_status;
   state_manager.transit(input_devices);
@@ -262,11 +262,11 @@ void loop() {
 
     controlTurnOut();
     controlMotor();
-    controlLed(input_status);
-    Serial.print("control state = ");
-    Serial.print(control_state);
-    Serial.print(", state = ");
+    controlLed();
+    Serial.print("state = ");
     Serial.print(state_manager.getStateNumber());
+    Serial.print(", loop = ");
+    Serial.print(output_devices.val);
     Serial.print(", LED = ");
     Serial.print((int)(input_devices.photo_int_led.getStatus()));
     Serial.print(", sensor 1 = ");

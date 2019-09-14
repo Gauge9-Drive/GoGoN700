@@ -9,7 +9,7 @@ const int kVoltFast = 100;
 
 const int kMaxValOfAnalogWrite = 0xFF;
 const int kMaxvalOfAnalogRead = 1023;
-const int kThreasholdOfPhotoInt = 700;
+const int kThreasholdOfPhotoInt = 500;
 const unsigned long kSwitchFiltTimeMsec = 100UL; // Time constant for filtering switch chattering in msec
 
 const int kVoltRiseRate100ms = 4; // duty LSB per 100ms
