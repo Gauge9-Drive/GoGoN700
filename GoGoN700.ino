@@ -27,6 +27,8 @@ const int kPortPhotoInt01 = 0; // analog
 const int kPortPhotoInt02 = 1; // analog
 
 bool builtin_led_status;
+
+// for new algo
 InputDevices input_devices;
 OutputDevices output_devices;
 StateManager state_manager;
@@ -34,9 +36,9 @@ StateManager state_manager;
 TurnOutDriver turn_out_driver_1;
 MotorDriver motor_driver_1;
 CountDownTimer timer_1;
-PhotoInterrupterLedDriver photo_int_led;
-PhotoInterrupter photo_int_1;
-PhotoInterrupter photo_int_2;
+//PhotoInterrupterLedDriver photo_int_led;
+//PhotoInterrupter photo_int_1;
+//PhotoInterrupter photo_int_2;
 
 struct InputStatus {
   bool switch_status;
@@ -55,9 +57,9 @@ void controlTurnOut() {
 }
 
 void drivePhotoInterrupter() {
-  photo_int_led.compute();
-  photo_int_1.compute();
-  photo_int_2.compute();
+  input_devices.photo_int_led.compute();
+  input_devices.photo_int_1.compute();
+  input_devices.photo_int_2.compute();
 }
 
 bool filterSwitchInput(const uint8_t switch_input_raw, const unsigned long msec) {
@@ -183,15 +185,15 @@ void setup() {
   digitalWrite(kPortRedLed, LOW);
   turn_out_driver_1.setPortNum(kPortTurnOut1P, kPortTurnOut1N);
   motor_driver_1.setPortNum(kPortMotorA, kPortMotorB, kPortEnableDriver);
-  photo_int_led.setPortNum(kPortPhotoIntLed);
-  photo_int_1.setPortNum(kPortPhotoInt01);
-  photo_int_1.setThresholdHigh(kThreasholdOfPhotoInt);
-  photo_int_1.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
-  photo_int_1.setHoldTime(1000UL);
-  photo_int_2.setPortNum(kPortPhotoInt02);
-  photo_int_2.setThresholdHigh(kThreasholdOfPhotoInt);
-  photo_int_2.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
-  photo_int_2.setHoldTime(1000UL);
+  input_devices.photo_int_led.setPortNum(kPortPhotoIntLed);
+  input_devices.photo_int_1.setPortNum(kPortPhotoInt01);
+  input_devices.photo_int_1.setThresholdHigh(kThreasholdOfPhotoInt);
+  input_devices.photo_int_1.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
+  input_devices.photo_int_1.setHoldTime(1000UL);
+  input_devices.photo_int_2.setPortNum(kPortPhotoInt02);
+  input_devices.photo_int_2.setThresholdHigh(kThreasholdOfPhotoInt);
+  input_devices.photo_int_2.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
+  input_devices.photo_int_2.setHoldTime(1000UL);
   
   builtin_led_status = true;
   input_status.switch_status = false;
@@ -216,8 +218,10 @@ void loop() {
   // read push switch
   input_status.switch_status = filterSwitchInput(digitalRead(kPortPushSwitch), millis());
   drivePhotoInterrupter();
-  input_status.sensor_status_1 = photo_int_1.getSensorState();
-  input_status.sensor_status_2 = photo_int_1.getSensorState();
+  // to be deleted
+  input_status.sensor_status_1 = input_devices.photo_int_1.getSensorState();
+  input_status.sensor_status_2 = input_devices.photo_int_2.getSensorState();
+  // to be deleted
   conutLoop(&vehicle_loop_count, input_status);
   transitState(&control_state, input_status, &vehicle_loop_count);
 
@@ -261,12 +265,14 @@ void loop() {
     Serial.print(", state = ");
     Serial.print(state_manager.getStateNumber());
     Serial.print(", LED = ");
-    Serial.print((int)(photo_int_led.getStatus()));
-    Serial.print(", sensor 1 raw = ");
-    Serial.print(photo_int_1.getSensorRaw());
-    Serial.print(", on = ");
-    Serial.print(photo_int_1.getSensorOnHold());
-    Serial.print(", off = ");
-    Serial.println(photo_int_1.getSensorOffHold());
+    Serial.print((int)(input_devices.photo_int_led.getStatus()));
+    Serial.print(", sensor 1 = ");
+    Serial.print(input_devices.photo_int_1.getSensorRaw());
+    Serial.print(", sensor 2 = ");
+    Serial.print(input_devices.photo_int_2.getSensorRaw());
+    Serial.print(", volt = ");
+    Serial.print(input_devices.photo_int_1.getSensorOnHold());
+    Serial.print(", turn out = ");
+    Serial.println(input_devices.photo_int_1.getSensorOffHold());
   }
 }

@@ -60,7 +60,7 @@ StateFwdSlow* StateFwdSlow::getInstance() {
 }
 
 StateBase* StateFwdSlow::transit(const InputDevices& input) {
-  if(input.sw_edge) {
+  if(input.sw_edge || input.photo_int_1.getSensorState()) {
     return StateFwdFast::getInstance();
   } else {
     return instance_;
@@ -75,6 +75,8 @@ void StateFwdSlow::execute(OutputDevices& output) {
 StateFwdFast* StateFwdFast::getInstance() {
   if(!instance_) {
     instance_ = new StateFwdFast;
+    loop_count_ = new int;
+    *loop_count_ = 0;
     Serial.println("Create Instance : StateFwdFast");
   } else {
     // NOP
@@ -83,8 +85,19 @@ StateFwdFast* StateFwdFast::getInstance() {
 }
 
 StateBase* StateFwdFast::transit(const InputDevices& input) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState()) {
+    (*loop_count_)++;
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState()) {
+    (*loop_count_)++;
+  } else {
+    // NOP
+  }
   if(input.sw_edge) {
+    *loop_count_ = 0;
     return StateHalt2::getInstance();
+  } else if(*loop_count_ >= 5) {
+    *loop_count_ = 0;
+    return StateBwdSlow::getInstance();
   } else {
     return instance_;
   }
@@ -129,7 +142,7 @@ StateBwdSlow* StateBwdSlow::getInstance() {
 }
 
 StateBase* StateBwdSlow::transit(const InputDevices& input) {
-  if(input.sw_edge) {
+  if(input.sw_edge || input.photo_int_1.getSensorState()) {
     return StateBwdFast::getInstance();
   } else {
     return instance_;
@@ -144,6 +157,8 @@ void StateBwdSlow::execute(OutputDevices& output) {
 StateBwdFast* StateBwdFast::getInstance() {
   if(!instance_) {
     instance_ = new StateBwdFast;
+    loop_count_ = new int;
+    *loop_count_ = 0;
     Serial.println("Create Instance : StateBwdFast");
   } else {
     // NOP
@@ -152,8 +167,19 @@ StateBwdFast* StateBwdFast::getInstance() {
 }
 
 StateBase* StateBwdFast::transit(const InputDevices& input) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState()) {
+    (*loop_count_)++;
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState()) {
+    (*loop_count_)++;
+  } else {
+    // NOP
+  }
   if(input.sw_edge) {
+    *loop_count_ = 0;
     return StateHalt1::getInstance();
+  } else if(*loop_count_ >= 5) {
+    *loop_count_ = 0;
+    return StateFwdSlow::getInstance();
   } else {
     return instance_;
   }

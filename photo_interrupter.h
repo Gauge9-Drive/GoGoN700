@@ -31,6 +31,7 @@ class PhotoInterrupterLedDriver {
     } else {
       status_ = LedIsOff;
     }
+ digitalWrite(port_, HIGH); // for DEBUG
   }
   
   PhotoIntLedStatus getStatus() {
@@ -56,10 +57,10 @@ class PhotoInterrupter {
 
   void compute();
   void setPortNum(const int port);
-  bool getSensorState();
-  int getSensorRaw();
-  int getSensorOnHold();
-  int getSensorOffHold();
+  bool getSensorState() const;
+  int getSensorRaw() const;
+  int getSensorOnHold() const;
+  int getSensorOffHold() const;
   bool detectEdgeRise();
   bool detectEdgeFall();
   void setThresholdHigh(const int th);

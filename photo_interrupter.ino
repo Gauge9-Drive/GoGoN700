@@ -21,13 +21,13 @@ void PhotoInterrupter::compute() {
   if(port_is_set_) {
     const int sensor_raw = analogRead(port_);
     sensor_raw_ = sensor_raw;
-    const PhotoInterrupterLedDriver::PhotoIntLedStatus led_status = photo_int_led.getStatus();
+    const PhotoInterrupterLedDriver::PhotoIntLedStatus led_status = input_devices.photo_int_led.getStatus();
     if(led_status == PhotoInterrupterLedDriver::LedIsOn && led_status != pre_led_status_) {
       sensor_on_hold_ = sensor_raw;
     } else if(led_status == PhotoInterrupterLedDriver::LedIsOff && led_status != pre_led_status_) {
       sensor_off_hold_ = sensor_raw;
     }
-    pre_led_status_ = photo_int_led.getStatus();
+    pre_led_status_ = input_devices.photo_int_led.getStatus();
     
     if(sensor_state_ == false) {
       if(sensor_raw > threshold_high_) {
@@ -58,15 +58,15 @@ void PhotoInterrupter::compute() {
   }
 }
 
-int PhotoInterrupter::getSensorRaw() {
+int PhotoInterrupter::getSensorRaw() const {
   return sensor_raw_;
 }
 
-int PhotoInterrupter::getSensorOnHold() {
+int PhotoInterrupter::getSensorOnHold() const {
   return sensor_on_hold_;
 }
 
-int PhotoInterrupter::getSensorOffHold() {
+int PhotoInterrupter::getSensorOffHold() const {
   return sensor_off_hold_;
 }
 
@@ -87,7 +87,7 @@ void PhotoInterrupter::setPortNum(const int port) {
   port_is_set_ = true;
 }
 
-bool PhotoInterrupter::getSensorState() {
+bool PhotoInterrupter::getSensorState() const {
   return sensor_state_;
 }
 

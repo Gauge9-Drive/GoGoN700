@@ -51,15 +51,17 @@ StateFwdSlow* StateFwdSlow::instance_ = 0;
 
 class StateFwdFast : public StateBase {
  public:
-  ~StateFwdFast() {delete instance_;}
+  ~StateFwdFast() {delete instance_; delete loop_count_;}
   static StateFwdFast* getInstance();
   StateBase* transit(const InputDevices& input);
   void execute(OutputDevices& output);
   int getStateNumber() {return 2;}
  private:
   static StateFwdFast* instance_;
+  static int* loop_count_;
 };
 StateFwdFast* StateFwdFast::instance_ = 0;
+int* StateFwdFast::loop_count_ = 0;
 
 class StateHalt2 : public StateBase {
  public:
@@ -87,14 +89,16 @@ StateBwdSlow* StateBwdSlow::instance_ = 0;
 
 class StateBwdFast : public StateBase {
  public:
-  ~StateBwdFast() {delete instance_;}
+  ~StateBwdFast() {delete instance_; delete loop_count_;}
   static StateBwdFast* getInstance();
   StateBase* transit(const InputDevices& input);
   void execute(OutputDevices& output);
   int getStateNumber() {return 5;}
  private:
   static StateBwdFast* instance_;
+  static int* loop_count_;
 };
 StateBwdFast* StateBwdFast::instance_ = 0;
+int* StateBwdFast::loop_count_ = 0;
 
 #endif
