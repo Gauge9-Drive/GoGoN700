@@ -101,7 +101,7 @@ StateBase* StateFwdFast::transit(const InputDevices& input) {
     return StateHalt2::getInstance();
   } else if(*loop_count_ >= 5) {
     *loop_count_ = 0;
-    return StateBwdSlow::getInstance();
+    return StateHalt2::getInstance();
   } else {
     return instance_;
   }
@@ -125,7 +125,13 @@ StateHalt2* StateHalt2::getInstance() {
 }
 
 StateBase* StateHalt2::transit(const InputDevices& input) {
-  if(input.push_sw_1.detectEdgeRise()) {
+  bool timer_end = false;
+  if(!timer_1.isActive()) {
+    timer_1.startTimer(6000UL);
+  } else {
+    timer_end = timer_1.isTimerEnd();
+  }
+  if(input.push_sw_1.detectEdgeRise() || timer_end) {
     return StateBwdSlow::getInstance();
   } else {
     return instance_;

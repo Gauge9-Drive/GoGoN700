@@ -3,10 +3,10 @@
 
 class PhotoInterrupterLedDriver {
  private:
-  const unsigned int kLedRiseTime = 10;  // ms
-  const unsigned int kLedOnDuration = 10;
-  const unsigned int kLedFallTime = 20;  // ms
-  const unsigned int kLedCycleTime = 50;
+  const unsigned int kLedRiseTime = 10U;  // ms
+  const unsigned int kLedOnDuration = 10U;
+  const unsigned int kLedFallTime = 20U;  // ms
+  const unsigned int kLedCycleTime = 50U;
 
  public:
   enum PhotoIntLedStatus {
