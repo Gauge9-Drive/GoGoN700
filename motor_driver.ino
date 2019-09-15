@@ -72,8 +72,10 @@ void MotorDriver::calcVoltRange(const int pre_volt, int* lower_out, int* upper_o
   int lower = 0;
   int upper = 0;
   if(pre_volt == 0) {
-    upper = kVoltRiseRate100ms;
-    lower = -kVoltRiseRate100ms;
+//    upper = kVoltRiseRate100ms;
+//    lower = -kVoltRiseRate100ms;
+    upper = 30;
+    lower = -30;
   } else if(pre_volt > 0) {
     upper = pre_volt + kVoltRiseRate100ms;
     if(upper > kMaxVolt) upper = kMaxVolt;

@@ -15,42 +15,12 @@ class PhotoInterrupterLedDriver {
     kTransitPeriod
   };
   
-  PhotoInterrupterLedDriver() {
-    status_ = kTransitPeriod;
-    port_is_set_ = false;
-    t1_ = kLedRiseTime;
-    t2_ = kLedRiseTime + kLedOnDuration;
-    t3_ = kLedRiseTime + kLedOnDuration + kLedFallTime;
-  }
+  PhotoInterrupterLedDriver();
   ~PhotoInterrupterLedDriver() {}
 
-  void compute() {
-    const unsigned int count = ((unsigned int)millis() % kLedCycleTime);
-    
-    if(port_is_set_ == false) {
-      status_ = kTransitPeriod;
-    } else if(count < t1_) {
-      status_ = kTransitPeriod;
-      digitalWrite(port_, HIGH);
-    } else if(count < t2_) {
-      status_ = kLedIsOn;
-    } else if(count < t3_) {
-      status_ = kTransitPeriod;
-      digitalWrite(port_, LOW);
-    } else {
-      status_ = kLedIsOff;
-    }
-  }
-  
-  PhotoIntLedStatus getStatus() {
-    return status_;
-  }
-
-  void setPortNum(int port) {
-    port_ = port;
-    pinMode(port_, OUTPUT);
-    port_is_set_ = true;
-  }
+  void compute();
+  PhotoIntLedStatus getStatus();
+  void setPortNum(int port);
 
  private:
   PhotoIntLedStatus status_;
@@ -72,8 +42,8 @@ class PhotoInterrupter {
   int getSensorRaw() const;
   int getSensorOnHold() const;
   int getSensorOffHold() const;
-  bool detectEdgeRise();
-  bool detectEdgeFall();
+  bool detectEdgeRise() const;
+  bool detectEdgeFall() const;
   void setThresholdHigh(const int th);
   void setThresholdLow(const int th);
   void setHoldTime(const unsigned long hold_time_ms);

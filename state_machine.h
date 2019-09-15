@@ -27,6 +27,142 @@ class StateManager {
   unsigned long start_time_;
 };
 
+/* ===================================================================== */
+class StateReady : public StateBase {
+ public:
+  ~StateReady() {delete instance_;}
+  static StateReady* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 0;}
+ private:
+  static StateReady* instance_;
+};
+StateReady* StateReady::instance_ = 0;
+
+class StatePrep : public StateBase {
+ public:
+  ~StatePrep() {delete instance_;}
+  static StatePrep* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 1;}
+ private:
+  static StatePrep* instance_;
+  static int* loop_count_;
+};
+StatePrep* StatePrep::instance_ = 0;
+
+class StatePosFast : public StateBase {
+ public:
+  ~StatePosFast() {delete instance_; delete loop_count_;}
+  static StatePosFast* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 11;}
+ private:
+  static StatePosFast* instance_;
+  static int* loop_count_;
+};
+StatePosFast* StatePosFast::instance_ = 0;
+int* StatePosFast::loop_count_ = 0;
+
+class StatePosSlow : public StateBase {
+ public:
+  ~StatePosSlow() {delete instance_;}
+  static StatePosSlow* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 12;}
+ private:
+  static StatePosSlow* instance_;
+};
+StatePosSlow* StatePosSlow::instance_ = 0;
+
+class StatePosStop : public StateBase {
+ public:
+  ~StatePosStop() {delete instance_;}
+  static StatePosStop* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 13;}
+ private:
+  static StatePosStop* instance_;
+};
+StatePosStop* StatePosStop::instance_ = 0;
+
+class StateLeaveBranchA : public StateBase {
+ public:
+  ~StateLeaveBranchA() {delete instance_;}
+  static StateLeaveBranchA* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 14;}
+ private:
+  static StateLeaveBranchA* instance_;
+};
+StateLeaveBranchA* StateLeaveBranchA::instance_ = 0;
+
+class StateNegFast : public StateBase {
+ public:
+  ~StateNegFast() {delete instance_; delete loop_count_;}
+  static StateNegFast* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 21;}
+ private:
+  static StateNegFast* instance_;
+  static int* loop_count_;
+};
+StateNegFast* StateNegFast::instance_ = 0;
+int* StateNegFast::loop_count_ = 0;
+
+class StateNegSlow : public StateBase {
+ public:
+  ~StateNegSlow() {delete instance_;}
+  static StateNegSlow* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 22;}
+ private:
+  static StateNegSlow* instance_;
+};
+StateNegSlow* StateNegSlow::instance_ = 0;
+
+class StateNegStop : public StateBase {
+ public:
+  ~StateNegStop() {delete instance_;}
+  static StateNegStop* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 23;}
+ private:
+  static StateNegStop* instance_;
+};
+StateNegStop* StateNegStop::instance_ = 0;
+
+/**
+ * 引込み線Bから、正方向に低速で走行し、センサBの立下り検知したら次へ
+ */
+class StateLeaveBranchB : public StateBase {
+ public:
+  ~StateLeaveBranchB() {delete instance_;}
+  static StateLeaveBranchB* getInstance();
+  StateBase* transit(const InputDevices& input, const unsigned int time_elapsed);
+  void execute(OutputDevices& output, const unsigned int time_elapsed);
+  int getStateNumber() {return 24;}
+ private:
+  static StateLeaveBranchB* instance_;
+};
+StateLeaveBranchB* StateLeaveBranchB::instance_ = 0;
+
+
+
+
+
+
+
+/* ===================================================================== */
 class StateHalt1 : public StateBase {
  public:
   ~StateHalt1() {delete instance_;}

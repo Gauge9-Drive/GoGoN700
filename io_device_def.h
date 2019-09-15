@@ -22,11 +22,11 @@ class InputDevices {  // TODO クラスにして、駆動処理をメソッド�
     photo_int_1.setPortNum(kPortPhotoInt01);
     photo_int_1.setThresholdHigh(kThresholdOfPhotoIntOn);
     photo_int_1.setThresholdLow(kThresholdOfPhotoIntOff);
-    photo_int_1.setHoldTime(1000UL);
+    photo_int_1.setHoldTime(500UL);
     photo_int_2.setPortNum(kPortPhotoInt02);
     photo_int_2.setThresholdHigh(kThresholdOfPhotoIntOn);
     photo_int_2.setThresholdLow(kThresholdOfPhotoIntOff);
-    photo_int_2.setHoldTime(1000UL);
+    photo_int_2.setHoldTime(500UL);
   }
   void compute() {
     photo_int_led.compute();
