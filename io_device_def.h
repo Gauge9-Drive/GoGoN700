@@ -5,6 +5,7 @@
 #include "push_switch.h"
 #include "turn_out_driver.h"
 #include "motor_driver.h"
+#include "led_control.h"
 
 const int kPortPushSwitch = 2;
 const int kPortPhotoIntLed = 7; // drive IR-LED
@@ -33,6 +34,7 @@ class InputDevices {  // TODO クラスにして、駆動処理をメソッド�
     photo_int_2.compute();
     push_sw_1.compute();
   }
+  
   PhotoInterrupterLedDriver photo_int_led;
   PhotoInterrupter photo_int_1;
   PhotoInterrupter photo_int_2;
@@ -42,6 +44,9 @@ class InputDevices {  // TODO クラスにして、駆動処理をメソッド�
 struct OutputDevices {
   TurnOutDriver turn_out_driver_1;
   MotorDriver motor_driver_1;
+  LedController led_1;
+  LedController led_2;
+  LedController led_built_in;
   int val;
 };
 

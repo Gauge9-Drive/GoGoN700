@@ -2,11 +2,8 @@
  * Schematics
  * 09 --MotorA(1A)--M--(2A)MotorB-- 10
  * Gauge9-Drive / 時致
- * TODO スイッチをクラスにする
  * TODO 入出力デバイスをクラスにする
- * TODO タイマの復活
  * TODO センサのLED駆動をシングルトンにする
- * TODO センサの判定条件をロバストにする
  * TODO ステート遷移条件の共通化
  * TODO 入力・出力クラスでそれぞれインターフェースを統一できないか
  */
@@ -18,14 +15,12 @@
 const int kPortEnableDriver = 8;
 const int kPortMotorA = 9; // Use OC1A as MotorA(1A of L293)
 const int kPortMotorB = 10; // OC1B - MotorB(2A)
-const int kPortGreenLed = 11;
-const int kPortRedLed = 12;
+const int kPortLed1 = 11;
+const int kPortLed2 = 12;
 const int kPortTurnOut1P = 4;
 const int kPortTurnOut1N = 3;
 const int kPortTurnOut2P = 5;
 const int kPortTurnOut2N = 6;
-
-bool builtin_led_status;
 
 InputDevices input_devices;
 OutputDevices output_devices;
@@ -37,22 +32,6 @@ void controlMotor() {
 
 void controlTurnOut() {
   output_devices.turn_out_driver_1.compute();
-}
-
-void controlLed() {
-  if(input_devices.photo_int_1.getSensorState()) {
-    digitalWrite(kPortGreenLed, HIGH);
-  } else {
-    digitalWrite(kPortGreenLed, LOW);
-  }
-  if(input_devices.photo_int_2.getSensorState()) {
-    digitalWrite(kPortRedLed, HIGH);
-  } else {
-    digitalWrite(kPortRedLed, LOW);
-  }
-  // on borad LED to blink every control cycle
-  builtin_led_status = !builtin_led_status;
-  digitalWrite(LED_BUILTIN, (builtin_led_status?HIGH:LOW));
 }
 
 bool start100msTasks(const unsigned long time_msec) { // check if 100ms elapsed since the last trigger
@@ -69,23 +48,20 @@ bool start100msTasks(const unsigned long time_msec) { // check if 100ms elapsed 
 
 void setup() {
   Serial.begin(57600);
-
-  pinMode(kPortGreenLed, OUTPUT);
-  pinMode(kPortRedLed, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(kPortGreenLed, HIGH);
-  digitalWrite(kPortRedLed, LOW);
+  Serial.println("start");
 
   input_devices.initialize();
   
   output_devices.turn_out_driver_1.setPortNum(kPortTurnOut1P, kPortTurnOut1N);
   output_devices.motor_driver_1.setPortNum(kPortMotorA, kPortMotorB, kPortEnableDriver);
+  output_devices.led_1.setPortNum(kPortLed1);
+  output_devices.led_2.setPortNum(kPortLed2);
+  output_devices.led_built_in.setPortNum(LED_BUILTIN);
+  output_devices.led_built_in.ledFlash(100U);
   output_devices.val = 0;
 
   state_manager.initialize();
-  builtin_led_status = true;
 
-  Serial.println("start");
 }
 
 // =============Loop=============
@@ -95,6 +71,11 @@ void loop() {
 
   input_devices.compute();
   state_manager.transit(input_devices);
+  output_devices.led_1.setLed(input_devices.photo_int_1.getSensorState());
+  output_devices.led_1.compute();
+  output_devices.led_2.setLed(input_devices.photo_int_2.getSensorState());
+  output_devices.led_2.compute();
+  output_devices.led_built_in.compute();
 /*
   static unsigned int last_ts = 0U;
   unsigned int ts = (unsigned int)millis() % 50;
@@ -114,7 +95,7 @@ void loop() {
 
     controlTurnOut();
     controlMotor();
-    controlLed();
+
     Serial.print("state = ");
     Serial.print(state_manager.getStateNumber());
     Serial.print(", sw 1 = ");
@@ -123,18 +104,8 @@ void loop() {
     Serial.print(output_devices.val);
     Serial.print(", LED = ");
     Serial.print((int)(input_devices.photo_int_led.getStatus()));
-//    Serial.print(", 1R = ");
-//    Serial.print(input_devices.photo_int_1.getSensorRaw());
-//    Serial.print(", 1H = ");
-//    Serial.print(input_devices.photo_int_1.getSensorOnHold());
-//    Serial.print(", 1L = ");
-//    Serial.print(input_devices.photo_int_1.getSensorOffHold());
     Serial.print(", 1D = ");
     Serial.print(input_devices.photo_int_1.getSensorOnHold() - input_devices.photo_int_1.getSensorOffHold());
-//    Serial.print(", 2H = ");
-//    Serial.print(input_devices.photo_int_2.getSensorOnHold());
-//    Serial.print(", 2L = ");
-//    Serial.print(input_devices.photo_int_2.getSensorOffHold());
     Serial.print(", 2D = ");
     Serial.print(input_devices.photo_int_2.getSensorOnHold() - input_devices.photo_int_2.getSensorOffHold());
     Serial.print(", volt = ");
