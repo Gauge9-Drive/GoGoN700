@@ -129,7 +129,11 @@ StateBase* StatePosFast::transit(const InputDevices& input, const unsigned int t
 
 void StatePosFast::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutStraight);
-  output.motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
+  if(*loop_count_ < 4) {
+    output.motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
+  } else {
+    output.motor_driver_1.setDriveMode(kMtDrvModeFwdSlow);
+  }
   output.val = *loop_count_;
 }
 
@@ -258,7 +262,11 @@ StateBase* StateNegFast::transit(const InputDevices& input, const unsigned int t
 
 void StateNegFast::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutStraight);
-  output.motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
+  if(*loop_count_ < 4) {
+    output.motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
+  } else {
+    output.motor_driver_1.setDriveMode(kMtDrvModeBwdSlow);
+  }
   output.val = *loop_count_;
 }
 
