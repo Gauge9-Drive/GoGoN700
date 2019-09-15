@@ -12,10 +12,11 @@
  */
 
 #include "constant_value.h"
-#include "turn_out_driver.h"
-#include "motor_driver.h"
 #include "count_down_timer.h"
 #include "photo_interrupter.h"
+#include "push_switch.h"
+#include "turn_out_driver.h"
+#include "motor_driver.h"
 #include "io_device_def.h"
 #include "state_machine.h"
 
@@ -55,31 +56,6 @@ void drivePhotoInterrupter() {
   input_devices.photo_int_2.compute();
 }
 
-bool filterSwitchInput(const uint8_t switch_input_raw, const unsigned long msec) {
-  static bool pre_switch_input = false;
-  static bool switch_status = false;
-  static unsigned long msec_at_last_edge = 0UL;
-  const bool switch_input = (switch_input_raw == HIGH);
-  
-  if(pre_switch_input != switch_input) {
-    msec_at_last_edge = msec;
-  } else if(msec > msec_at_last_edge + kSwitchFiltTimeMsec) {
-    switch_status = switch_input;
-  } else {
-    // do nothing
-  }
-  pre_switch_input = switch_input;
-  return switch_status;
-}
-
-bool detectSwitchEdge(const bool sw_input) {
-  static bool pre_sw_input = false;
-  bool output = false;
-  if(pre_sw_input != sw_input) output = true;
-  pre_sw_input = sw_input;
-  return output;
-}
-
 void controlLed() {
   if(input_devices.photo_int_1.getSensorState()) {
     digitalWrite(kPortGreenLed, HIGH);
@@ -111,14 +87,13 @@ bool start100msTasks(const unsigned long time_msec) { // check if 100ms elapsed 
 void setup() {
   Serial.begin(9600);
 
-  pinMode(kPortPushSwitch, INPUT);
   pinMode(kPortGreenLed, OUTPUT);
   pinMode(kPortRedLed, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(kPortGreenLed, HIGH);
   digitalWrite(kPortRedLed, LOW);
-  input_devices.sw_status = false;
-  input_devices.sw_edge = false;
+
+  input_devices.push_sw_1.setPortNum(kPortPushSwitch);
   input_devices.photo_int_led.setPortNum(kPortPhotoIntLed);
   input_devices.photo_int_1.setPortNum(kPortPhotoInt01);
   input_devices.photo_int_1.setThresholdHigh(kThreasholdOfPhotoInt);
@@ -143,16 +118,9 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  static ControlStatus control_state = kCtrlStHalt1;
-  static int vehicle_loop_count = 0;
-
-  // read push switch
-  input_devices.sw_status = filterSwitchInput(digitalRead(kPortPushSwitch), millis());
   drivePhotoInterrupter();
+  input_devices.push_sw_1.compute();
 
-  static bool pre_sw_status = false;
-  input_devices.sw_edge = (input_devices.sw_status == true && pre_sw_status == false);
-  pre_sw_status = input_devices.sw_status;
   state_manager.transit(input_devices);
 
   if(start100msTasks(millis())) { // run the control sequence every 100ms
@@ -163,6 +131,8 @@ void loop() {
     controlLed();
     Serial.print("state = ");
     Serial.print(state_manager.getStateNumber());
+    Serial.print(", sw 1 = ");
+    Serial.print(input_devices.push_sw_1.getState());
     Serial.print(", loop = ");
     Serial.print(output_devices.val);
     Serial.print(", LED = ");

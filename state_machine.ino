@@ -37,7 +37,7 @@ StateHalt1* StateHalt1::getInstance() {
 }
 
 StateBase* StateHalt1::transit(const InputDevices& input) {
-  if(input.sw_edge) {
+  if(input.push_sw_1.detectEdgeRise()) {
     return StateFwdSlow::getInstance();
   } else {
     return instance_;
@@ -62,7 +62,7 @@ StateFwdSlow* StateFwdSlow::getInstance() {
 }
 
 StateBase* StateFwdSlow::transit(const InputDevices& input) {
-  if(input.sw_edge || input.photo_int_1.getSensorState()) {
+  if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getSensorState()) {
     return StateFwdFast::getInstance();
   } else {
     return instance_;
@@ -96,7 +96,7 @@ StateBase* StateFwdFast::transit(const InputDevices& input) {
   } else {
     // NOP
   }
-  if(input.sw_edge) {
+  if(input.push_sw_1.detectEdgeRise()) {
     *loop_count_ = 0;
     return StateHalt2::getInstance();
   } else if(*loop_count_ >= 5) {
@@ -125,7 +125,7 @@ StateHalt2* StateHalt2::getInstance() {
 }
 
 StateBase* StateHalt2::transit(const InputDevices& input) {
-  if(input.sw_edge) {
+  if(input.push_sw_1.detectEdgeRise()) {
     return StateBwdSlow::getInstance();
   } else {
     return instance_;
@@ -150,7 +150,7 @@ StateBwdSlow* StateBwdSlow::getInstance() {
 }
 
 StateBase* StateBwdSlow::transit(const InputDevices& input) {
-  if(input.sw_edge || input.photo_int_1.getSensorState()) {
+  if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getSensorState()) {
     return StateBwdFast::getInstance();
   } else {
     return instance_;
@@ -184,7 +184,7 @@ StateBase* StateBwdFast::transit(const InputDevices& input) {
   } else {
     // NOP
   }
-  if(input.sw_edge) {
+  if(input.push_sw_1.detectEdgeRise()) {
     *loop_count_ = 0;
     return StateHalt1::getInstance();
   } else if(*loop_count_ >= 5) {

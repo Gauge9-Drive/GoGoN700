@@ -5,6 +5,7 @@ struct InputDevices {  // TODO クラスにして、駆動処理をメソッド�
   PhotoInterrupterLedDriver photo_int_led;
   PhotoInterrupter photo_int_1;
   PhotoInterrupter photo_int_2;
+  PushSwitch push_sw_1;
   bool sw_status;
   bool sw_edge;
 };
