@@ -13,10 +13,6 @@
 
 #include "constant_value.h"
 #include "count_down_timer.h"
-#include "photo_interrupter.h"
-#include "push_switch.h"
-#include "turn_out_driver.h"
-#include "motor_driver.h"
 #include "io_device_def.h"
 #include "state_machine.h"
 
@@ -75,7 +71,7 @@ bool start100msTasks(const unsigned long time_msec) { // check if 100ms elapsed 
 // =============Setup=============
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(57600);
 
   pinMode(kPortGreenLed, OUTPUT);
   pinMode(kPortRedLed, OUTPUT);
@@ -102,6 +98,19 @@ void loop() {
 
   input_devices.compute();
   state_manager.transit(input_devices);
+/*
+  static unsigned int last_ts = 0U;
+  unsigned int ts = (unsigned int)millis() % 50;
+  if(last_ts != ts) {
+    int v = analogRead(0);
+    Serial.print(ts);
+    Serial.print(" ");
+    Serial.print((int)(input_devices.photo_int_led.getStatus()));
+    Serial.print(" ");
+    Serial.println(v);
+    last_ts = ts;
+  }
+  */
 
   if(start100msTasks(millis())) { // run the control sequence every 100ms
     state_manager.execute(output_devices);
@@ -117,10 +126,20 @@ void loop() {
     Serial.print(output_devices.val);
     Serial.print(", LED = ");
     Serial.print((int)(input_devices.photo_int_led.getStatus()));
-    Serial.print(", sensor 1 = ");
-    Serial.print(input_devices.photo_int_1.getSensorRaw());
-    Serial.print(", sensor 2 = ");
-    Serial.print(input_devices.photo_int_2.getSensorRaw());
+//    Serial.print(", 1R = ");
+//    Serial.print(input_devices.photo_int_1.getSensorRaw());
+//    Serial.print(", 1H = ");
+//    Serial.print(input_devices.photo_int_1.getSensorOnHold());
+//    Serial.print(", 1L = ");
+//    Serial.print(input_devices.photo_int_1.getSensorOffHold());
+    Serial.print(", 1D = ");
+    Serial.print(input_devices.photo_int_1.getSensorOnHold() - input_devices.photo_int_1.getSensorOffHold());
+//    Serial.print(", 2H = ");
+//    Serial.print(input_devices.photo_int_2.getSensorOnHold());
+//    Serial.print(", 2L = ");
+//    Serial.print(input_devices.photo_int_2.getSensorOffHold());
+    Serial.print(", 2D = ");
+    Serial.print(input_devices.photo_int_2.getSensorOnHold() - input_devices.photo_int_2.getSensorOffHold());
     Serial.print(", volt = ");
     Serial.print(output_devices.motor_driver_1.getVoltage());
     Serial.print(", turn out = ");

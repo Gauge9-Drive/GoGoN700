@@ -2,7 +2,7 @@
 
 PhotoInterrupter::PhotoInterrupter() {
   sensor_state_ = false;
-  pre_led_status_ = PhotoInterrupterLedDriver::TransitTime;
+  pre_led_status_ = PhotoInterrupterLedDriver::kTransitPeriod;
   sensor_raw_ = 0;
   sensor_on_hold_ = 0;
   sensor_off_hold_ = 0;
@@ -19,18 +19,23 @@ PhotoInterrupter::PhotoInterrupter() {
 
 void PhotoInterrupter::compute() {
   if(port_is_set_) {
-    const int sensor_raw = analogRead(port_);
-    sensor_raw_ = sensor_raw;
     const PhotoInterrupterLedDriver::PhotoIntLedStatus led_status = input_devices.photo_int_led.getStatus();
-    if(led_status == PhotoInterrupterLedDriver::LedIsOn && led_status != pre_led_status_) {
-      sensor_on_hold_ = sensor_raw;
-    } else if(led_status == PhotoInterrupterLedDriver::LedIsOff && led_status != pre_led_status_) {
-      sensor_off_hold_ = sensor_raw;
+    if(led_status != pre_led_status_) {  // led_status が切替わったときのみ処理を行う
+      sensor_raw_ = analogRead(port_);
+//      Serial.print("read:");
+//      Serial.println(sensor_raw_);
+      if(led_status == PhotoInterrupterLedDriver::kLedIsOn) {
+        sensor_on_hold_ = sensor_raw_;
+      } else if(led_status == PhotoInterrupterLedDriver::kLedIsOff) {
+        sensor_off_hold_ = sensor_raw_;
+      }
     }
-    pre_led_status_ = input_devices.photo_int_led.getStatus();
+    pre_led_status_ = led_status;
+
+    const int sensor_diff = sensor_on_hold_ - sensor_off_hold_;
     
     if(sensor_state_ == false) {
-      if(sensor_raw > threshold_high_) {
+      if(sensor_diff > threshold_high_) {
         sensor_state_ = true;
         edge_fall_ = false;
         edge_rise_ = true;
@@ -38,7 +43,7 @@ void PhotoInterrupter::compute() {
         last_active_time_ms_ = millis();
       }
     } else {
-      if(sensor_raw >= threshold_low_) {
+      if(sensor_diff >= threshold_low_) {
         last_active_time_ms_ = millis();
       } else if(last_active_time_ms_ + hold_time_ms_ < millis()) {
         sensor_state_ = false;

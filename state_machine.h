@@ -2,6 +2,7 @@
 #define STATE_MACHINE_H
 
 #include "io_device_def.h"
+#include "constant_value.h"
 
 class StateBase {
  public:

@@ -1,6 +1,11 @@
 #ifndef IO_DEVICE_DEF_H
 #define IO_DEVICE_DEF_H
 
+#include "photo_interrupter.h"
+#include "push_switch.h"
+#include "turn_out_driver.h"
+#include "motor_driver.h"
+
 const int kPortPushSwitch = 2;
 const int kPortPhotoIntLed = 7; // drive IR-LED
 const int kPortPhotoInt01 = 0; // analog
@@ -14,12 +19,12 @@ class InputDevices {  // TODO クラスにして、駆動処理をメソッド�
     push_sw_1.setPortNum(kPortPushSwitch);
     photo_int_led.setPortNum(kPortPhotoIntLed);
     photo_int_1.setPortNum(kPortPhotoInt01);
-    photo_int_1.setThresholdHigh(kThreasholdOfPhotoInt);
-    photo_int_1.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
+    photo_int_1.setThresholdHigh(kThresholdOfPhotoIntOn);
+    photo_int_1.setThresholdLow(kThresholdOfPhotoIntOff);
     photo_int_1.setHoldTime(1000UL);
     photo_int_2.setPortNum(kPortPhotoInt02);
-    photo_int_2.setThresholdHigh(kThreasholdOfPhotoInt);
-    photo_int_2.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
+    photo_int_2.setThresholdHigh(kThresholdOfPhotoIntOn);
+    photo_int_2.setThresholdLow(kThresholdOfPhotoIntOff);
     photo_int_2.setHoldTime(1000UL);
   }
   void compute() {

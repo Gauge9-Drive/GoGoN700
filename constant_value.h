@@ -9,7 +9,8 @@ const int kVoltFast = 100;
 
 const int kMaxValOfAnalogWrite = 0xFF;
 const int kMaxvalOfAnalogRead = 1023;
-const int kThreasholdOfPhotoInt = 500;
+const int kThresholdOfPhotoIntOn = 300;
+const int kThresholdOfPhotoIntOff = 150;
 const unsigned long kSwitchFiltTimeMsec = 100UL; // Time constant for filtering switch chattering in msec
 
 const int kVoltRiseRate100ms = 4; // duty LSB per 100ms
@@ -17,16 +18,6 @@ const int kVoltFallRate100ms = 4; // duty LSB per 100ms
 
 const unsigned long kTurnOutDriveDurationMsec = 100UL;
 const unsigned long kTurnOutDriveIntervalMsec = 1000UL;
-
-enum ControlStatus {
-  kCtrlStHalt1 = 0,
-  kCtrlStFwdSlow,
-  kCtrlStFwdFast,
-  kCtrlStHalt2,
-  kCtrlStBwdSlow,
-  kCtrlStBwdFast,
-  kCtrlStMaxNum
-};
 
 enum MotorDriveMode {
   kMtDrvModeHalt = 0,

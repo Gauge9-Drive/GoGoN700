@@ -2,36 +2,44 @@
 #define PHOTO_INTERRUPTER_H
 
 class PhotoInterrupterLedDriver {
+ private:
+  const unsigned int kLedRiseTime = 10;  // ms
+  const unsigned int kLedOnDuration = 10;
+  const unsigned int kLedFallTime = 20;  // ms
+  const unsigned int kLedCycleTime = 50;
+
  public:
   enum PhotoIntLedStatus {
-    LedIsOn = 0,
-    LedIsOff,
-    TransitTime
+    kLedIsOn = 0,
+    kLedIsOff,
+    kTransitPeriod
   };
   
   PhotoInterrupterLedDriver() {
-    status_ = TransitTime;
+    status_ = kTransitPeriod;
     port_is_set_ = false;
+    t1_ = kLedRiseTime;
+    t2_ = kLedRiseTime + kLedOnDuration;
+    t3_ = kLedRiseTime + kLedOnDuration + kLedFallTime;
   }
   ~PhotoInterrupterLedDriver() {}
 
   void compute() {
-    const unsigned int mask = 0x0300;
-    const unsigned int count = (mask & ((unsigned int)millis()));
+    const unsigned int count = ((unsigned int)millis() % kLedCycleTime);
+    
     if(port_is_set_ == false) {
-      status_ = TransitTime;
-    } else if(count < 0x0100) {
-      status_ = TransitTime;
+      status_ = kTransitPeriod;
+    } else if(count < t1_) {
+      status_ = kTransitPeriod;
       digitalWrite(port_, HIGH);
-    } else if(count < 0x0200) {
-      status_ = LedIsOn;
-    } else if(count < 0x0300) {
-      status_ = TransitTime;
+    } else if(count < t2_) {
+      status_ = kLedIsOn;
+    } else if(count < t3_) {
+      status_ = kTransitPeriod;
       digitalWrite(port_, LOW);
     } else {
-      status_ = LedIsOff;
+      status_ = kLedIsOff;
     }
- digitalWrite(port_, HIGH); // for DEBUG
   }
   
   PhotoIntLedStatus getStatus() {
@@ -48,6 +56,9 @@ class PhotoInterrupterLedDriver {
   PhotoIntLedStatus status_;
   int port_;
   bool port_is_set_;
+  unsigned int t1_;
+  unsigned int t2_;
+  unsigned int t3_;
 };
 
 class PhotoInterrupter {
@@ -81,6 +92,7 @@ class PhotoInterrupter {
   int threshold_low_;
   unsigned long hold_time_ms_;
   unsigned long last_active_time_ms_;
+
   int port_;
   bool port_is_set_;
   
