@@ -4,7 +4,7 @@
 
 const int kMaxVolt = 255; // fixed
 const int kMinVolt = -255; // fixed
-const int kVoltSlow = 60;
+const int kVoltSlow = 65;
 const int kVoltFast = 100;
 
 const int kMaxValOfAnalogWrite = 0xFF;

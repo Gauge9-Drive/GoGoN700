@@ -12,7 +12,6 @@
  */
 
 #include "constant_value.h"
-#include "count_down_timer.h"
 #include "io_device_def.h"
 #include "state_machine.h"
 
@@ -31,8 +30,6 @@ bool builtin_led_status;
 InputDevices input_devices;
 OutputDevices output_devices;
 StateManager state_manager;
-
-CountDownTimer timer_1;
 
 void controlMotor() {
   output_devices.motor_driver_1.compute();

@@ -11,17 +11,24 @@ StateManager::~StateManager() {
 void StateManager::initialize() {
   Serial.println("initilize");
   current_state_ = StateHalt1::getInstance();
+  start_time_ = millis();
 }
 
 void StateManager::transit(const InputDevices& input_devices) {
   if(current_state_ != 0) {
-    current_state_ = current_state_->transit(input_devices);
+    const StateBase* pre_state = current_state_;
+    const unsigned int time_elapsed = (unsigned int)(millis() - start_time_);
+    current_state_ = current_state_->transit(input_devices, time_elapsed);
+    if(current_state_ != pre_state) {
+      start_time_ = millis();
+    }
   }
 }
 
 void StateManager::execute(OutputDevices& output_devices) {
   if(current_state_ != 0) {
-    current_state_->execute(output_devices);
+    const unsigned int time_elapsed = (unsigned int)(millis() - start_time_);
+    current_state_->execute(output_devices, time_elapsed);
   }
 }
 
@@ -36,7 +43,7 @@ StateHalt1* StateHalt1::getInstance() {
   return instance_;
 }
 
-StateBase* StateHalt1::transit(const InputDevices& input) {
+StateBase* StateHalt1::transit(const InputDevices& input, const unsigned int time_elapsed) {
   if(input.push_sw_1.detectEdgeRise()) {
     return StateFwdSlow::getInstance();
   } else {
@@ -44,7 +51,7 @@ StateBase* StateHalt1::transit(const InputDevices& input) {
   }
 }
 
-void StateHalt1::execute(OutputDevices& output) {
+void StateHalt1::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutStraight);
   output.motor_driver_1.setDriveMode(kMtDrvModeHalt);
   output.val = 0;
@@ -61,7 +68,7 @@ StateFwdSlow* StateFwdSlow::getInstance() {
   return instance_;
 }
 
-StateBase* StateFwdSlow::transit(const InputDevices& input) {
+StateBase* StateFwdSlow::transit(const InputDevices& input, const unsigned int time_elapsed) {
   if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getSensorState()) {
     return StateFwdFast::getInstance();
   } else {
@@ -69,7 +76,7 @@ StateBase* StateFwdSlow::transit(const InputDevices& input) {
   }
 }
 
-void StateFwdSlow::execute(OutputDevices& output) {
+void StateFwdSlow::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutStraight);
   output.motor_driver_1.setDriveMode(kMtDrvModeFwdSlow);
   output.val = 1;
@@ -88,10 +95,12 @@ StateFwdFast* StateFwdFast::getInstance() {
   return instance_;
 }
 
-StateBase* StateFwdFast::transit(const InputDevices& input) {
-  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState() && !input.photo_int_1.getSensorState()) {
+StateBase* StateFwdFast::transit(const InputDevices& input, const unsigned int time_elapsed) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState() 
+                             && !input.photo_int_1.getSensorState()) {
     (*loop_count_)++;
-  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState() && !input.photo_int_2.getSensorState()) {
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState() 
+                                    && !input.photo_int_2.getSensorState()) {
     (*loop_count_)++;
   } else {
     // NOP
@@ -107,7 +116,7 @@ StateBase* StateFwdFast::transit(const InputDevices& input) {
   }
 }
 
-void StateFwdFast::execute(OutputDevices& output) {
+void StateFwdFast::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutStraight);
   output.motor_driver_1.setDriveMode(kMtDrvModeFwdFast);
   output.val = *loop_count_;
@@ -124,13 +133,13 @@ StateHalt2* StateHalt2::getInstance() {
   return instance_;
 }
 
-StateBase* StateHalt2::transit(const InputDevices& input) {
-  bool timer_end = false;
-  if(!timer_1.isActive()) {
+StateBase* StateHalt2::transit(const InputDevices& input, const unsigned int time_elapsed) {
+  const bool timer_end = time_elapsed > 6000UL;
+/*  if(!timer_1.isActive()) {
     timer_1.startTimer(6000UL);
   } else {
     timer_end = timer_1.isTimerEnd();
-  }
+  }*/
   if(input.push_sw_1.detectEdgeRise() || timer_end) {
     return StateBwdSlow::getInstance();
   } else {
@@ -138,7 +147,7 @@ StateBase* StateHalt2::transit(const InputDevices& input) {
   }
 }
 
-void StateHalt2::execute(OutputDevices& output) {
+void StateHalt2::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutCurve);
   output.motor_driver_1.setDriveMode(kMtDrvModeHalt);
   output.val = 0;
@@ -155,7 +164,7 @@ StateBwdSlow* StateBwdSlow::getInstance() {
   return instance_;
 }
 
-StateBase* StateBwdSlow::transit(const InputDevices& input) {
+StateBase* StateBwdSlow::transit(const InputDevices& input, const unsigned int time_elapsed) {
   if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getSensorState()) {
     return StateBwdFast::getInstance();
   } else {
@@ -163,7 +172,7 @@ StateBase* StateBwdSlow::transit(const InputDevices& input) {
   }
 }
 
-void StateBwdSlow::execute(OutputDevices& output) {
+void StateBwdSlow::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutCurve);
   output.motor_driver_1.setDriveMode(kMtDrvModeBwdSlow);
   output.val = 1;
@@ -182,7 +191,7 @@ StateBwdFast* StateBwdFast::getInstance() {
   return instance_;
 }
 
-StateBase* StateBwdFast::transit(const InputDevices& input) {
+StateBase* StateBwdFast::transit(const InputDevices& input, const unsigned int time_elapsed) {
   if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState() && !input.photo_int_1.getSensorState()) {
     (*loop_count_)++;
   } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState() && !input.photo_int_2.getSensorState()) {
@@ -201,7 +210,7 @@ StateBase* StateBwdFast::transit(const InputDevices& input) {
   }
 }
 
-void StateBwdFast::execute(OutputDevices& output) {
+void StateBwdFast::execute(OutputDevices& output, const unsigned int time_elapsed) {
   output.turn_out_driver_1.setStatus(kTurnOutCurve);
   output.motor_driver_1.setDriveMode(kMtDrvModeBwdFast);
   output.val = *loop_count_;
