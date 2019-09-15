@@ -23,16 +23,12 @@
 const int kPortEnableDriver = 8;
 const int kPortMotorA = 9; // Use OC1A as MotorA(1A of L293)
 const int kPortMotorB = 10; // OC1B - MotorB(2A)
-const int kPortPushSwitch = 2;
 const int kPortGreenLed = 11;
 const int kPortRedLed = 12;
 const int kPortTurnOut1P = 4;
 const int kPortTurnOut1N = 3;
 const int kPortTurnOut2P = 5;
 const int kPortTurnOut2N = 6;
-const int kPortPhotoIntLed = 7; // drive IR-LED
-const int kPortPhotoInt01 = 0; // analog
-const int kPortPhotoInt02 = 1; // analog
 
 bool builtin_led_status;
 
@@ -48,12 +44,6 @@ void controlMotor() {
 
 void controlTurnOut() {
   output_devices.turn_out_driver_1.compute();
-}
-
-void drivePhotoInterrupter() {
-  input_devices.photo_int_led.compute();
-  input_devices.photo_int_1.compute();
-  input_devices.photo_int_2.compute();
 }
 
 void controlLed() {
@@ -93,16 +83,7 @@ void setup() {
   digitalWrite(kPortGreenLed, HIGH);
   digitalWrite(kPortRedLed, LOW);
 
-  input_devices.push_sw_1.setPortNum(kPortPushSwitch);
-  input_devices.photo_int_led.setPortNum(kPortPhotoIntLed);
-  input_devices.photo_int_1.setPortNum(kPortPhotoInt01);
-  input_devices.photo_int_1.setThresholdHigh(kThreasholdOfPhotoInt);
-  input_devices.photo_int_1.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
-  input_devices.photo_int_1.setHoldTime(1000UL);
-  input_devices.photo_int_2.setPortNum(kPortPhotoInt02);
-  input_devices.photo_int_2.setThresholdHigh(kThreasholdOfPhotoInt);
-  input_devices.photo_int_2.setThresholdLow(kThreasholdOfPhotoInt - 200UL);
-  input_devices.photo_int_2.setHoldTime(1000UL);
+  input_devices.initialize();
   
   output_devices.turn_out_driver_1.setPortNum(kPortTurnOut1P, kPortTurnOut1N);
   output_devices.motor_driver_1.setPortNum(kPortMotorA, kPortMotorB, kPortEnableDriver);
@@ -118,9 +99,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  drivePhotoInterrupter();
-  input_devices.push_sw_1.compute();
 
+  input_devices.compute();
   state_manager.transit(input_devices);
 
   if(start100msTasks(millis())) { // run the control sequence every 100ms
