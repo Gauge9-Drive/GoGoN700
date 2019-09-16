@@ -110,9 +110,9 @@ StatePosFast* StatePosFast::getInstance() {
 }
 
 StateBase* StatePosFast::transit(const InputDevices& input, const unsigned int time_elapsed) {
-  if((*loop_count_ % 2) == 0 && input.photo_int_1.getSensorState()) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_1.getState()) {
     (*loop_count_)++;
-  } else if((*loop_count_ % 2) == 1 && input.photo_int_2.getSensorState()) {
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_2.getState()) {
     (*loop_count_)++;
   } else {
     // NOP
@@ -243,9 +243,9 @@ StateNegFast* StateNegFast::getInstance() {
 }
 
 StateBase* StateNegFast::transit(const InputDevices& input, const unsigned int time_elapsed) {
-  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState()) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getState()) {
     (*loop_count_)++;
-  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState()) {
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getState()) {
     (*loop_count_)++;
   } else {
     // NOP
@@ -398,7 +398,7 @@ StateFwdSlow* StateFwdSlow::getInstance() {
 }
 
 StateBase* StateFwdSlow::transit(const InputDevices& input, const unsigned int time_elapsed) {
-  if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getSensorState()) {
+  if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getState()) {
     return StateFwdFast::getInstance();
   } else {
     return instance_;
@@ -425,11 +425,11 @@ StateFwdFast* StateFwdFast::getInstance() {
 }
 
 StateBase* StateFwdFast::transit(const InputDevices& input, const unsigned int time_elapsed) {
-  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState() 
-                             && !input.photo_int_1.getSensorState()) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getState() 
+                             && !input.photo_int_1.getState()) {
     (*loop_count_)++;
-  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState() 
-                                    && !input.photo_int_2.getSensorState()) {
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getState() 
+                                    && !input.photo_int_2.getState()) {
     (*loop_count_)++;
   } else {
     // NOP
@@ -494,7 +494,7 @@ StateBwdSlow* StateBwdSlow::getInstance() {
 }
 
 StateBase* StateBwdSlow::transit(const InputDevices& input, const unsigned int time_elapsed) {
-  if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getSensorState()) {
+  if(input.push_sw_1.detectEdgeRise() || input.photo_int_1.getState()) {
     return StateBwdFast::getInstance();
   } else {
     return instance_;
@@ -521,9 +521,9 @@ StateBwdFast* StateBwdFast::getInstance() {
 }
 
 StateBase* StateBwdFast::transit(const InputDevices& input, const unsigned int time_elapsed) {
-  if((*loop_count_ % 2) == 0 && input.photo_int_2.getSensorState() && !input.photo_int_1.getSensorState()) {
+  if((*loop_count_ % 2) == 0 && input.photo_int_2.getState() && !input.photo_int_1.getState()) {
     (*loop_count_)++;
-  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getSensorState() && !input.photo_int_2.getSensorState()) {
+  } else if((*loop_count_ % 2) == 1 && input.photo_int_1.getState() && !input.photo_int_2.getState()) {
     (*loop_count_)++;
   } else {
     // NOP

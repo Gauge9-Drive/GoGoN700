@@ -19,7 +19,7 @@ class PhotoInterrupterLedDriver {
   ~PhotoInterrupterLedDriver() {}
 
   void compute();
-  PhotoIntLedStatus getStatus();
+  PhotoIntLedStatus getState() const;
   void setPortNum(int port);
 
  private:
@@ -33,17 +33,18 @@ class PhotoInterrupterLedDriver {
 
 class PhotoInterrupter {
  public:
-  PhotoInterrupter();
+  PhotoInterrupter() = delete;
+  PhotoInterrupter(PhotoInterrupterLedDriver* const led_driver);
   ~PhotoInterrupter() {}
 
   void compute();
-  void setPortNum(const int port);
-  bool getSensorState() const;
-  int getSensorRaw() const;
-  int getSensorOnHold() const;
-  int getSensorOffHold() const;
+  bool getState() const;
   bool detectEdgeRise() const;
   bool detectEdgeFall() const;
+  void setPortNum(const int port);
+
+  int getOnHold() const;
+  int getOffHold() const;
   void setThresholdHigh(const int th);
   void setThresholdLow(const int th);
   void setHoldTime(const unsigned long hold_time_ms);
@@ -51,6 +52,7 @@ class PhotoInterrupter {
  private:
   bool sensor_state_;
   PhotoInterrupterLedDriver::PhotoIntLedStatus pre_led_status_;
+  PhotoInterrupterLedDriver* led_driver_;
   int sensor_raw_;
   int sensor_on_hold_;
   int sensor_off_hold_;

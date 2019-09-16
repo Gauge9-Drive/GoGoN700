@@ -27,7 +27,7 @@ void PhotoInterrupterLedDriver::compute() {
   }
 }
 
-PhotoInterrupterLedDriver::PhotoIntLedStatus PhotoInterrupterLedDriver::getStatus() {
+PhotoInterrupterLedDriver::PhotoIntLedStatus PhotoInterrupterLedDriver::getState() const {
   return status_;
 }
 
@@ -38,7 +38,8 @@ void PhotoInterrupterLedDriver::setPortNum(int port) {
 }
 
 
-PhotoInterrupter::PhotoInterrupter() {
+PhotoInterrupter::PhotoInterrupter(PhotoInterrupterLedDriver* const led_driver) {
+  led_driver_ = led_driver;
   sensor_state_ = false;
   pre_led_status_ = PhotoInterrupterLedDriver::kTransitPeriod;
   sensor_raw_ = 0;
@@ -57,11 +58,9 @@ PhotoInterrupter::PhotoInterrupter() {
 
 void PhotoInterrupter::compute() {
   if (port_is_set_) {
-    const PhotoInterrupterLedDriver::PhotoIntLedStatus led_status = input_devices.photo_int_led.getStatus();
+    const PhotoInterrupterLedDriver::PhotoIntLedStatus led_status = led_driver_->getState();
     if (led_status != pre_led_status_) { // led_status が切替わったときのみ処理を行う
       sensor_raw_ = analogRead(port_);
-      //      Serial.print("read:");
-      //      Serial.println(sensor_raw_);
       if (led_status == PhotoInterrupterLedDriver::kLedIsOn) {
         sensor_on_hold_ = sensor_raw_;
       } else if (led_status == PhotoInterrupterLedDriver::kLedIsOff) {
@@ -101,15 +100,11 @@ void PhotoInterrupter::compute() {
   }
 }
 
-int PhotoInterrupter::getSensorRaw() const {
-  return sensor_raw_;
-}
-
-int PhotoInterrupter::getSensorOnHold() const {
+int PhotoInterrupter::getOnHold() const {
   return sensor_on_hold_;
 }
 
-int PhotoInterrupter::getSensorOffHold() const {
+int PhotoInterrupter::getOffHold() const {
   return sensor_off_hold_;
 }
 
@@ -126,7 +121,7 @@ void PhotoInterrupter::setPortNum(const int port) {
   port_is_set_ = true;
 }
 
-bool PhotoInterrupter::getSensorState() const {
+bool PhotoInterrupter::getState() const {
   return sensor_state_;
 }
 

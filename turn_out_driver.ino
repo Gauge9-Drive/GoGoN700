@@ -47,7 +47,7 @@ void TurnOutDriver::compute() {
   }
 }
 
-void TurnOutDriver::setStatus(const TurnOutStatus turn_out_status) {
+void TurnOutDriver::setStatus(const TurnOutState turn_out_status) {
   detect_edge_ = (turn_out_status_ != turn_out_status);
   turn_out_status_ = turn_out_status;
 }

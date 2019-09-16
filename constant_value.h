@@ -1,6 +1,7 @@
 #ifndef CONSTANT_VALUE_H
 #define CONSTANT_VALUE_H
 
+const int kControlPeriod = 100UL; // unsigned long
 
 const int kMaxVolt = 255; // fixed
 const int kMinVolt = -255; // fixed
@@ -15,6 +16,7 @@ const unsigned long kSwitchFiltTimeMsec = 100UL; // Time constant for filtering 
 
 const int kVoltRiseRate100ms = 1; // duty LSB per 100ms
 const int kVoltFallRate100ms = 2; // duty LSB per 100ms
+const int kVoltDeadZone = 35;
 
 const unsigned long kTurnOutDriveDurationMsec = 100UL;
 const unsigned long kTurnOutDriveIntervalMsec = 1000UL;
@@ -27,7 +29,7 @@ enum MotorDriveMode {
   kMtDrvModeBwdFast
 };
 
-enum TurnOutStatus {
+enum TurnOutState {
   kTurnOutStraight = 0,
   kTurnOutCurve
 }; 

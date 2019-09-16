@@ -74,16 +74,16 @@ void MotorDriver::calcVoltRange(const int pre_volt, int* lower_out, int* upper_o
   if(pre_volt == 0) {
 //    upper = kVoltRiseRate100ms;
 //    lower = -kVoltRiseRate100ms;
-    upper = 30;
-    lower = -30;
+    upper = kVoltDeadZone;
+    lower = -kVoltDeadZone;
   } else if(pre_volt > 0) {
     upper = pre_volt + kVoltRiseRate100ms;
     if(upper > kMaxVolt) upper = kMaxVolt;
     lower = pre_volt - kVoltFallRate100ms;
-    if(lower < 0) lower = 0;
+    if(lower < kVoltDeadZone) lower = 0;
   } else { // pre_volt < 0
     upper = pre_volt + kVoltFallRate100ms;
-    if(upper > 0) upper = 0;
+    if(upper > -kVoltDeadZone) upper = 0;
     lower = pre_volt - kVoltRiseRate100ms;
     if(lower < kMinVolt) lower = kMinVolt;
   }
